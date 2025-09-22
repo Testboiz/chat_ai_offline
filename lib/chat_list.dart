@@ -147,6 +147,8 @@ class _ChatListWidgetState extends State<ChatListWidget> {
                           padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 2),
                           child: Text(
                             'Hello World',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontFamily: "Inter",
@@ -156,7 +158,9 @@ class _ChatListWidgetState extends State<ChatListWidget> {
                           ),
                         ),
                         Text(
-                          'lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet',
+                          'lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet,',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontFamily: "Inter",
                             letterSpacing: 0.0,
@@ -199,6 +203,8 @@ class _ChatListWidgetState extends State<ChatListWidget> {
                         padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 2),
                         child: Text(
                           'Hello World',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontFamily: "Inter",
@@ -209,6 +215,8 @@ class _ChatListWidgetState extends State<ChatListWidget> {
                       ),
                       Text(
                         'lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontFamily: "Inter",
                           letterSpacing: 0.0,
@@ -250,6 +258,8 @@ class _ChatListWidgetState extends State<ChatListWidget> {
                         padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 2),
                         child: Text(
                           'Hello World',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontFamily: "Inter",
@@ -260,6 +270,8 @@ class _ChatListWidgetState extends State<ChatListWidget> {
                       ),
                       Text(
                         'lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontFamily: "Inter",
                           letterSpacing: 0.0,
