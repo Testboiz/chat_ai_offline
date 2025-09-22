@@ -144,12 +144,12 @@ class _ChatWidgetState extends State<ChatWidget> {
       ),
       body: SafeArea(
         top: true,
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            SingleChildScrollView(
-              child: Column(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
                 mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -321,99 +321,102 @@ class _ChatWidgetState extends State<ChatWidget> {
                   ),
                 ],
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  Expanded(
-                    child: Align(
-                      alignment: AlignmentDirectional(0, 0),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: TextFormField(
-                          controller: messageController,
-                          autofocus: false,
-                          obscureText: false,
-                          decoration: InputDecoration(
-                            isDense: true,
-                            labelStyle: TextStyle(
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Expanded(
+                      child: Align(
+                        alignment: AlignmentDirectional(0, 0),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: TextFormField(
+                            controller: messageController,
+                            autofocus: false,
+                            obscureText: false,
+                            decoration: InputDecoration(
+                              isDense: true,
+                              labelStyle: TextStyle(
+                                fontFamily: "Inter",
+                                letterSpacing: 0.0,
+                                fontWeight: FontWeight.w400,
+                              ),
+                              hintText: 'Bercakap dengan AI',
+                              hintStyle: TextStyle(
+                                fontFamily: "Inter",
+                                letterSpacing: 0.0,
+                                fontWeight: FontWeight.w400,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: const Color.fromARGB(255, 75, 57, 239),
+                                  width: 1,
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: const Color.fromARGB(255, 75, 57, 239),
+                                  width: 1,
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color:
+                                      const Color.fromARGB(255, 255, 89, 100),
+                                  width: 1,
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              focusedErrorBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color:
+                                      const Color.fromARGB(255, 255, 89, 100),
+                                  width: 1,
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
+                            ),
+                            style: TextStyle(
                               fontFamily: "Inter",
                               letterSpacing: 0.0,
                               fontWeight: FontWeight.w400,
                             ),
-                            hintText: 'Bercakap dengan AI',
-                            hintStyle: TextStyle(
-                              fontFamily: "Inter",
-                              letterSpacing: 0.0,
-                              fontWeight: FontWeight.w400,
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: const Color.fromARGB(255, 75, 57, 239),
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: const Color.fromARGB(255, 75, 57, 239),
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: const Color.fromARGB(255, 255, 89, 100),
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: const Color.fromARGB(255, 255, 89, 100),
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            filled: true,
-                            fillColor: Colors.white,
+                            maxLines: 2,
+                            cursorColor: const Color.fromARGB(255, 75, 57, 239),
+                            enableInteractiveSelection: true,
                           ),
-                          style: TextStyle(
-                            fontFamily: "Inter",
-                            letterSpacing: 0.0,
-                            fontWeight: FontWeight.w400,
-                          ),
-                          maxLines: 2,
-                          cursorColor: const Color.fromARGB(255, 75, 57, 239),
-                          enableInteractiveSelection: true,
                         ),
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.send,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                      style: IconButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(40),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.send,
+                          color: Colors.white,
+                          size: 24,
                         ),
-                        minimumSize: const Size.fromRadius(30),
-                        backgroundColor: const Color.fromARGB(255, 75, 57, 239),
+                        style: IconButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(40),
+                          ),
+                          minimumSize: const Size.fromRadius(30),
+                          backgroundColor:
+                              const Color.fromARGB(255, 75, 57, 239),
+                        ),
+                        onPressed: () {},
                       ),
-                      onPressed: () {},
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
