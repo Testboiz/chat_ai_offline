@@ -1,11 +1,46 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:chat_ai_offline/chat.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
 
 class ChatListWidget extends StatefulWidget {
   const ChatListWidget({super.key});
 
   static String routeName = 'ChatList';
   static String routePath = '/chatList';
+
+  Future<Database> _openDb() async {
+    var databasesPath = await getDatabasesPath();
+    var path = join(databasesPath, "chat_database.db");
+
+    // delete existing if any
+    // delete after testing abcde
+    await deleteDatabase(path);
+
+    // Make sure the parent directory exists
+    try {
+      await Directory(dirname(path)).create(recursive: true);
+    } catch (_) {}
+
+    // Copy from asset
+    ByteData data =
+        await rootBundle.load(url.join("assets", "db", "chat_database.db"));
+    List<int> bytes =
+        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+    await File(path).writeAsBytes(bytes, flush: true);
+
+    // open the database
+    return openDatabase(path);
+  }
+
+  Future<List<Map<String, dynamic>>> _getData() async {
+    final db = await _openDb();
+    return await db.query('chats');
+  }
 
   @override
   State<ChatListWidget> createState() => _ChatListWidgetState();
@@ -120,75 +155,96 @@ class _ChatListWidgetState extends State<ChatListWidget> {
       body: SafeArea(
         top: true,
         child: SingleChildScrollView(
-          child: ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: 1,
-            itemBuilder: (context, index) {
-              return Align(
-                alignment: Alignment.center,
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => ChatWidget()));
-                  },
-                  child: Card(
-                    clipBehavior: Clip.antiAliasWithSaveLayer,
-                    color: Colors.white,
-                    elevation: 3,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsetsDirectional.fromSTEB(5, 5, 5, 5),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.max,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 2),
-                            child: Text(
-                              'Hello World',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontFamily: "Inter",
-                                letterSpacing: 0.0,
-                                fontWeight: FontWeight.w600,
+          child: FutureBuilder<List<Map<String, dynamic>>>(
+            future: widget._getData(),
+            builder:
+                (context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
+              if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              }
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(child: Text('No data'));
+              }
+              final data = snapshot.data!;
+              print(data[0]["chat_name"]);
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: data.length,
+                itemBuilder: (context, index) {
+                  return Align(
+                    alignment: Alignment.center,
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => ChatWidget(),
+                          ),
+                        );
+                      },
+                      child: Card(
+                        clipBehavior: Clip.antiAliasWithSaveLayer,
+                        color: Colors.white,
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Padding(
+                          padding: EdgeInsetsDirectional.fromSTEB(5, 5, 5, 5),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.max,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding:
+                                    EdgeInsetsDirectional.fromSTEB(0, 0, 0, 2),
+                                child: Text(
+                                  data[index]["chat_name"] as String,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontFamily: "Inter",
+                                    letterSpacing: 0.0,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                          Text(
-                            'lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet,',
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontFamily: "Inter",
-                              letterSpacing: 0.0,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                          Align(
-                            alignment: AlignmentDirectional(1, 0),
-                            child: Padding(
-                              padding:
-                                  EdgeInsetsDirectional.fromSTEB(0, 5, 0, 0),
-                              child: Text(
-                                '5 Minutes Ago',
+                              Text(
+                                'lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet,',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontFamily: "Inter",
                                   letterSpacing: 0.0,
                                   fontWeight: FontWeight.w400,
                                 ),
                               ),
-                            ),
+                              Align(
+                                alignment: AlignmentDirectional(1, 0),
+                                child: Padding(
+                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                      0, 5, 0, 0),
+                                  child: Text(
+                                    data[index]["last_chat_at"] as String,
+                                    style: TextStyle(
+                                      fontFamily: "Inter",
+                                      letterSpacing: 0.0,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                ),
+                  );
+                },
               );
             },
           ),

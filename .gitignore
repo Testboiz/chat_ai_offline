@@ -3,7 +3,7 @@
 *.log
 *.pyc
 *.swp
-db/*.db
+assets/db/*.db
 .DS_Store
 .atom/
 .build/
