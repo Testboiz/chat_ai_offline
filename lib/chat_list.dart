@@ -169,7 +169,6 @@ class _ChatListWidgetState extends State<ChatListWidget> {
                 return Center(child: Text('No data'));
               }
               final data = snapshot.data!;
-              print(data[0]["chat_name"]);
               return ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
