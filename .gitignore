@@ -3,7 +3,7 @@
 *.log
 *.pyc
 *.swp
-*.db
+db/*.db
 .DS_Store
 .atom/
 .build/
@@ -44,3 +44,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+db/chat_database.db
+db/chat_database.db
+db/chat_database.db
