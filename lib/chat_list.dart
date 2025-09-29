@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:chat_ai_offline/chat.dart';
 import 'package:flutter/material.dart';
@@ -154,22 +153,25 @@ class _ChatListWidgetState extends State<ChatListWidget> {
       ),
       body: SafeArea(
         top: true,
-        child: SingleChildScrollView(
-          child: FutureBuilder<List<Map<String, dynamic>>>(
-            future: widget._getData(),
-            builder:
-                (context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
-              }
-              if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              }
-              if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return Center(child: Text('No data'));
-              }
-              final data = snapshot.data!;
-              return ListView.builder(
+        child: FutureBuilder<List<Map<String, dynamic>>>(
+          future: widget._getData(),
+          builder:
+              (context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            }
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Center(
+                child:
+                    Text('Belum ada chat, Ayo kita chat dengan klik tombol +'),
+              );
+            }
+            final data = snapshot.data!;
+            return SingleChildScrollView(
+              child: ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: data.length,
@@ -244,9 +246,9 @@ class _ChatListWidgetState extends State<ChatListWidget> {
                     ),
                   );
                 },
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
