@@ -1,10 +1,6 @@
-import 'dart:io';
-
 import 'package:chat_ai_offline/chat.dart';
+import 'package:chat_ai_offline/database_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
 
 class ChatListWidget extends StatefulWidget {
   const ChatListWidget({super.key});
@@ -12,32 +8,8 @@ class ChatListWidget extends StatefulWidget {
   static String routeName = 'ChatList';
   static String routePath = '/chatList';
 
-  Future<Database> _openDb() async {
-    var databasesPath = await getDatabasesPath();
-    var path = join(databasesPath, "chat_database.db");
-
-    // delete existing if any
-    // delete after testing abcde
-    await deleteDatabase(path);
-
-    // Make sure the parent directory exists
-    try {
-      await Directory(dirname(path)).create(recursive: true);
-    } catch (_) {}
-
-    // Copy from asset
-    ByteData data =
-        await rootBundle.load(url.join("assets", "db", "chat_database.db"));
-    List<int> bytes =
-        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-    await File(path).writeAsBytes(bytes, flush: true);
-
-    // open the database
-    return openDatabase(path);
-  }
-
   Future<List<Map<String, dynamic>>> _getData() async {
-    final db = await _openDb();
+    final db = await DatabaseHelper().database;
     return await db.query('chats');
   }
 
@@ -62,8 +34,6 @@ class _ChatListWidgetState extends State<ChatListWidget> {
   /**
    * Backlog
    * TODO : Refactor colors and repeating components
-   * TODO : Turn the list to some ListView
-   * TODO : Integrate to SQLite DB
    * TODO : Make change model button work
    */
 

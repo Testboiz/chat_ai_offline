@@ -27,8 +27,6 @@ class _ChatWidgetState extends State<ChatWidget> {
   /**
    * Backlog
    * TODO : Refactor colors and repeating components
-   * TODO : Turn the list to some ListView, with user and assistant difference
-   * TODO : Integrate to SQLite DB
    * TODO : (optional) add streaming
    * TODO : Make Edit chat, and send button work
    */

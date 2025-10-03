@@ -51,7 +51,6 @@ class _HomePageWidgetState extends State<HomePageWidget> {
   // ignore: slash_for_doc_comments
   /**
    * Backlog
-   * TODO : Refactor colors and repeating components
    * TODO : Add ggml library
    */
 
