@@ -33,6 +33,93 @@ class _ChatWidgetState extends State<ChatWidget> {
    * TODO : Make Edit chat, and send button work
    */
 
+  Widget assistantChatBubble() {
+    return Padding(
+      padding: EdgeInsetsDirectional.fromSTEB(15, 5, 5, 5),
+      child: Card(
+        clipBehavior: Clip.antiAliasWithSaveLayer,
+        color: Colors.white,
+        elevation: 5,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Padding(
+          padding: EdgeInsetsDirectional.fromSTEB(5, 5, 5, 5),
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Align(
+                alignment: AlignmentDirectional(1, 0),
+                child: Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 2),
+                  child: Text(
+                    'Assistant',
+                    style: TextStyle(
+                      fontFamily: "Inter",
+                      letterSpacing: 0.0,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
+              ),
+              Text(
+                'lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet ',
+                style: TextStyle(
+                  fontFamily: "Inter",
+                  letterSpacing: 0.0,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget userChatBubble() {
+    return Padding(
+      padding: EdgeInsetsDirectional.fromSTEB(5, 5, 15, 5),
+      child: Card(
+        clipBehavior: Clip.antiAliasWithSaveLayer,
+        color: Colors.white,
+        elevation: 5,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Padding(
+          padding: EdgeInsetsDirectional.fromSTEB(5, 5, 5, 5),
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 2),
+                child: Text(
+                  'User',
+                  style: TextStyle(
+                    fontFamily: "Inter",
+                    letterSpacing: 0.0,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ),
+              Text(
+                'lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet ',
+                style: TextStyle(
+                  fontFamily: "Inter",
+                  letterSpacing: 0.0,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     TextEditingController messageController = TextEditingController();
@@ -152,46 +239,11 @@ class _ChatWidgetState extends State<ChatWidget> {
                 scrollDirection: Axis.vertical,
                 itemCount: 10,
                 itemBuilder: (context, index) {
-                  return Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(5, 5, 15, 5),
-                    child: Card(
-                      clipBehavior: Clip.antiAliasWithSaveLayer,
-                      color: Colors.white,
-                      elevation: 5,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(5, 5, 5, 5),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding:
-                                  EdgeInsetsDirectional.fromSTEB(0, 0, 0, 2),
-                              child: Text(
-                                'User',
-                                style: TextStyle(
-                                  fontFamily: "Inter",
-                                  letterSpacing: 0.0,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              'lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet ',
-                              style: TextStyle(
-                                fontFamily: "Inter",
-                                letterSpacing: 0.0,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
+                  if (index.isOdd) {
+                    return userChatBubble();
+                  } else {
+                    return assistantChatBubble();
+                  }
                 },
               ),
             ),
