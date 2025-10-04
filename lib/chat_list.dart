@@ -44,8 +44,8 @@ class _ChatListWidgetState extends State<ChatListWidget> {
       backgroundColor: Colors.white,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.of(context)
-              .push(MaterialPageRoute(builder: (context) => ChatWidget()));
+          // Navigator.of(context)
+          //     .push(MaterialPageRoute(builder: (context) => ChatWidget()));
         },
         backgroundColor: const Color.fromARGB(255, 75, 57, 239),
         elevation: 8,
@@ -152,7 +152,9 @@ class _ChatListWidgetState extends State<ChatListWidget> {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => ChatWidget(),
+                            builder: (context) => ChatWidget(
+                              id: data[index]["chat_id"],
+                            ),
                           ),
                         );
                       },

@@ -2,10 +2,12 @@ import 'package:chat_ai_offline/database_helper.dart';
 import 'package:flutter/material.dart';
 
 class ChatWidget extends StatefulWidget {
-  const ChatWidget({super.key});
+  const ChatWidget({super.key, required this.id});
 
   static String routeName = 'Chat';
   static String routePath = '/chat';
+
+  final String id;
 
   @override
   State<ChatWidget> createState() => _ChatWidgetState();
@@ -17,11 +19,10 @@ class _ChatWidgetState extends State<ChatWidget> {
 
   void _getData() async {
     final db = await DatabaseHelper().database;
-    var queryData = await db.query(
-      'chat_messages',
-      orderBy: "created_at ASC",
-      where: ""
-    );
+    var queryData = await db.query('chat_messages',
+        orderBy: "created_at ASC",
+        where: "chat_id = ?",
+        whereArgs: [widget.id]);
 
     setState(() {
       _messages.addAll(queryData);
