@@ -1,6 +1,7 @@
 import 'package:chat_ai_offline/chat.dart';
 import 'package:chat_ai_offline/database_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 class ChatListWidget extends StatefulWidget {
   const ChatListWidget({super.key});
@@ -8,21 +9,31 @@ class ChatListWidget extends StatefulWidget {
   static String routeName = 'ChatList';
   static String routePath = '/chatList';
 
-  Future<List<Map<String, dynamic>>> _getData() async {
-    final db = await DatabaseHelper().database;
-    return await db.query('chats');
-  }
-
   @override
   State<ChatListWidget> createState() => _ChatListWidgetState();
 }
 
 class _ChatListWidgetState extends State<ChatListWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  late Future<List<Map<String, dynamic>>> chatData;
+
+  Future<List<Map<String, dynamic>>> _getData() async {
+    final db = await DatabaseHelper().database;
+    return await db.query('chats');
+  }
 
   @override
   void initState() {
     super.initState();
+    setState(() {
+      chatData = _getData();
+    });
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      chatData = _getData();
+    });
   }
 
   @override
@@ -43,9 +54,33 @@ class _ChatListWidgetState extends State<ChatListWidget> {
       key: scaffoldKey,
       backgroundColor: Colors.white,
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Navigator.of(context)
-          //     .push(MaterialPageRoute(builder: (context) => ChatWidget()));
+        onPressed: () async {
+          var uuid = Uuid();
+          String id = uuid.v4();
+          var db = await DatabaseHelper().database;
+          try {
+            await db.insert("chats", {
+              'chat_id': id,
+              'chat_name': "New Chat",
+            });
+          } catch (e) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Something Went Wrong"),
+                ),
+              );
+            }
+          }
+          if (context.mounted) {
+            Navigator.of(context)
+                .push(
+                  MaterialPageRoute(
+                    builder: (context) => ChatWidget(id: id),
+                  ),
+                )
+                .then((_) => initState());
+          }
         },
         backgroundColor: const Color.fromARGB(255, 75, 57, 239),
         elevation: 8,
@@ -124,7 +159,7 @@ class _ChatListWidgetState extends State<ChatListWidget> {
       body: SafeArea(
         top: true,
         child: FutureBuilder<List<Map<String, dynamic>>>(
-          future: widget._getData(),
+          future: chatData,
           builder:
               (context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
