@@ -1,3 +1,4 @@
+import 'package:chat_ai_offline/database_helper.dart';
 import 'package:flutter/material.dart';
 
 class ChatWidget extends StatefulWidget {
@@ -12,10 +13,25 @@ class ChatWidget extends StatefulWidget {
 
 class _ChatWidgetState extends State<ChatWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  final List<Map<String, dynamic>> _messages = [];
+
+  void _getData() async {
+    final db = await DatabaseHelper().database;
+    var queryData = await db.query(
+      'chat_messages',
+      orderBy: "created_at ASC",
+      where: ""
+    );
+
+    setState(() {
+      _messages.addAll(queryData);
+    });
+  }
 
   @override
   void initState() {
     super.initState();
+    _getData();
   }
 
   @override
@@ -31,7 +47,7 @@ class _ChatWidgetState extends State<ChatWidget> {
    * TODO : Make Edit chat, and send button work
    */
 
-  Widget assistantChatBubble() {
+  Widget assistantChatBubble(String message) {
     return Padding(
       padding: EdgeInsetsDirectional.fromSTEB(15, 5, 5, 5),
       child: Card(
@@ -62,7 +78,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                 ),
               ),
               Text(
-                'lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet ',
+                message,
                 style: TextStyle(
                   fontFamily: "Inter",
                   letterSpacing: 0.0,
@@ -76,7 +92,7 @@ class _ChatWidgetState extends State<ChatWidget> {
     );
   }
 
-  Widget userChatBubble() {
+  Widget userChatBubble(String message) {
     return Padding(
       padding: EdgeInsetsDirectional.fromSTEB(5, 5, 15, 5),
       child: Card(
@@ -104,7 +120,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                 ),
               ),
               Text(
-                'lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet ',
+                message,
                 style: TextStyle(
                   fontFamily: "Inter",
                   letterSpacing: 0.0,
@@ -233,14 +249,13 @@ class _ChatWidgetState extends State<ChatWidget> {
           children: [
             Expanded(
               child: ListView.builder(
-                shrinkWrap: true,
-                scrollDirection: Axis.vertical,
-                itemCount: 10,
+                itemCount: _messages.length,
                 itemBuilder: (context, index) {
-                  if (index.isOdd) {
-                    return userChatBubble();
+                  final msg = _messages[index];
+                  if (msg["role"] == "assistant") {
+                    return assistantChatBubble(msg["message_text"]);
                   } else {
-                    return assistantChatBubble();
+                    return userChatBubble(msg["message_text"]);
                   }
                 },
               ),
