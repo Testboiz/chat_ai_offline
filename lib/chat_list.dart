@@ -79,7 +79,7 @@ class _ChatListWidgetState extends State<ChatListWidget> {
                     builder: (context) => ChatWidget(id: id),
                   ),
                 )
-                .then((_) => initState());
+                .then((_) => _loadData());
           }
         },
         backgroundColor: const Color.fromARGB(255, 75, 57, 239),

@@ -16,6 +16,7 @@ class ChatWidget extends StatefulWidget {
 class _ChatWidgetState extends State<ChatWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final List<Map<String, dynamic>> _messages = [];
+  var title = "Chat";
 
   void _getData() async {
     final db = await DatabaseHelper().database;
@@ -24,8 +25,12 @@ class _ChatWidgetState extends State<ChatWidget> {
         where: "chat_id = ?",
         whereArgs: [widget.id]);
 
+    var tableInfo =
+        await db.query('chats', where: "chat_id = ?", whereArgs: [widget.id]);
+
     setState(() {
       _messages.addAll(queryData);
+      title = tableInfo[0]["chat_name"] as String;
     });
   }
 
@@ -147,7 +152,7 @@ class _ChatWidgetState extends State<ChatWidget> {
         backgroundColor: const Color.fromARGB(255, 75, 57, 239),
         automaticallyImplyLeading: false,
         title: Text(
-          'Chat',
+          title,
           style: TextStyle(
             fontFamily: "Inter", // tight
             color: Colors.white,
