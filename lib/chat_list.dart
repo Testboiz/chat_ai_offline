@@ -19,7 +19,17 @@ class _ChatListWidgetState extends State<ChatListWidget> {
 
   Future<List<Map<String, dynamic>>> _getData() async {
     final db = await DatabaseHelper().database;
-    return await db.query('chats');
+    return await db.rawQuery("""
+WITH latest AS (
+  SELECT *,
+         ROW_NUMBER() OVER (PARTITION BY chat_id ORDER BY created_at DESC) AS rn
+  FROM chat_messages
+)
+SELECT p.*, c.*
+FROM chats p
+LEFT JOIN latest c
+  ON p.chat_id = c.chat_id AND c.rn = 1;  
+    """);
   }
 
   @override
@@ -222,7 +232,7 @@ class _ChatListWidgetState extends State<ChatListWidget> {
                                 ),
                               ),
                               Text(
-                                'lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet,',
+                                data[index]["message_text"] ?? "",
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
