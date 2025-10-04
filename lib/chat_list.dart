@@ -54,8 +54,8 @@ LEFT JOIN latest c
   // ignore: slash_for_doc_comments
   /**
    * Backlog
-   * TODO : Refactor colors and repeating components
    * TODO : Make change model button work
+   * TODO : Add xx time ago
    */
 
   @override
@@ -198,7 +198,8 @@ LEFT JOIN latest c
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) => ChatWidget(
-                              id: data[index]["chat_id"],
+                              id: data[index][
+                                  "chat_id"], // TODO : fix bug on chatdata not updating after making new one
                             ),
                           ),
                         );

@@ -48,7 +48,6 @@ class _ChatWidgetState extends State<ChatWidget> {
   // ignore: slash_for_doc_comments
   /**
    * Backlog
-   * TODO : Refactor colors and repeating components
    * TODO : (optional) add streaming
    * TODO : Make Edit chat, and send button work
    */
