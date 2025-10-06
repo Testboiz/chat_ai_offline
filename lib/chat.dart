@@ -143,7 +143,7 @@ class _ChatWidgetState extends State<ChatWidget> {
   @override
   Widget build(BuildContext context) {
     TextEditingController messageController = TextEditingController();
-    TextEditingController titleController = TextEditingController();
+    TextEditingController titleController = TextEditingController(text: title);
 
     return Scaffold(
       key: scaffoldKey,
@@ -235,8 +235,17 @@ class _ChatWidgetState extends State<ChatWidget> {
                           'Edit',
                           style: TextStyle(color: Colors.white),
                         ),
-                        onPressed: () {
-                          Navigator.pop(context);
+                        onPressed: () async {
+                          var db = await DatabaseHelper().database;
+                          await db.update(
+                              "chats", {'chat_name': titleController.text},
+                              where: "chat_id = ?", whereArgs: [widget.id]);
+                          setState(() {
+                            title = titleController.text;
+                          });
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                          }
                         },
                       ),
                     ],
