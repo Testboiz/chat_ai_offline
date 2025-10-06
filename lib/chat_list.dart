@@ -25,10 +25,14 @@ WITH latest AS (
          ROW_NUMBER() OVER (PARTITION BY chat_id ORDER BY created_at DESC) AS rn
   FROM chat_messages
 )
-SELECT p.*, c.*
+SELECT 
+  p.chat_id AS chat_id,
+  p.chat_name,
+  c.message_text,
+  COALESCE(c.created_at, p.created_at)  AS last_chat_at
 FROM chats p
 LEFT JOIN latest c
-  ON p.chat_id = c.chat_id AND c.rn = 1;  
+  ON p.chat_id = c.chat_id AND c.rn = 1;
     """);
   }
 
@@ -68,6 +72,7 @@ LEFT JOIN latest c
           var uuid = Uuid();
           String id = uuid.v4();
           var db = await DatabaseHelper().database;
+          print(id);
           try {
             await db.insert("chats", {
               'chat_id': id,
@@ -191,15 +196,15 @@ LEFT JOIN latest c
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: data.length,
                 itemBuilder: (context, index) {
+                  var chatData = data[index];
                   return Align(
                     alignment: Alignment.center,
                     child: GestureDetector(
-                      onTap: () {
+                      onTap: () async {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) => ChatWidget(
-                              id: data[index][
-                                  "chat_id"], // TODO : fix bug on chatdata not updating after making new one
+                              id: chatData["chat_id"],
                             ),
                           ),
                         );
@@ -221,7 +226,7 @@ LEFT JOIN latest c
                                 padding:
                                     EdgeInsetsDirectional.fromSTEB(0, 0, 0, 2),
                                 child: Text(
-                                  data[index]["chat_name"] as String,
+                                  chatData["chat_name"] as String,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   textAlign: TextAlign.center,
@@ -233,7 +238,7 @@ LEFT JOIN latest c
                                 ),
                               ),
                               Text(
-                                data[index]["message_text"] ?? "",
+                                chatData["message_text"] ?? "",
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
@@ -248,7 +253,7 @@ LEFT JOIN latest c
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0, 5, 0, 0),
                                   child: Text(
-                                    data[index]["last_chat_at"] as String,
+                                    chatData["last_chat_at"] as String,
                                     style: TextStyle(
                                       fontFamily: "Inter",
                                       letterSpacing: 0.0,
