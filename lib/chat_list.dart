@@ -2,6 +2,7 @@ import 'package:chat_ai_offline/chat.dart';
 import 'package:chat_ai_offline/database_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
+import "package:timeago/timeago.dart" as timeago;
 
 class ChatListWidget extends StatefulWidget {
   const ChatListWidget({super.key});
@@ -39,6 +40,7 @@ LEFT JOIN latest c
   @override
   void initState() {
     super.initState();
+    timeago.setLocaleMessages("id_short", timeago.IdShortMessages());
     setState(() {
       chatData = _getData();
     });
@@ -59,7 +61,6 @@ LEFT JOIN latest c
   /**
    * Backlog
    * TODO : Make change model button work
-   * TODO : Add xx time ago
    */
 
   @override
@@ -72,7 +73,6 @@ LEFT JOIN latest c
           var uuid = Uuid();
           String id = uuid.v4();
           var db = await DatabaseHelper().database;
-          print(id);
           try {
             await db.insert("chats", {
               'chat_id': id,
@@ -253,7 +253,10 @@ LEFT JOIN latest c
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0, 5, 0, 0),
                                   child: Text(
-                                    chatData["last_chat_at"] as String,
+                                    timeago.format(
+                                        DateTime.parse(
+                                            chatData["last_chat_at"]),
+                                        locale: "id_short"),
                                     style: TextStyle(
                                       fontFamily: "Inter",
                                       letterSpacing: 0.0,
