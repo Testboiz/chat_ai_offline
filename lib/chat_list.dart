@@ -201,13 +201,15 @@ LEFT JOIN latest c
                     alignment: Alignment.center,
                     child: GestureDetector(
                       onTap: () async {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => ChatWidget(
-                              id: chatData["chat_id"],
-                            ),
-                          ),
-                        );
+                        Navigator.of(context)
+                            .push(
+                              MaterialPageRoute(
+                                builder: (context) => ChatWidget(
+                                  id: chatData["chat_id"],
+                                ),
+                              ),
+                            )
+                            .then((_) => _loadData());
                       },
                       child: Card(
                         clipBehavior: Clip.antiAliasWithSaveLayer,

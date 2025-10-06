@@ -1,5 +1,6 @@
 import 'package:chat_ai_offline/database_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 class ChatWidget extends StatefulWidget {
   const ChatWidget({super.key, required this.id});
@@ -350,7 +351,28 @@ class _ChatWidgetState extends State<ChatWidget> {
                         minimumSize: const Size.fromRadius(30),
                         backgroundColor: const Color.fromARGB(255, 75, 57, 239),
                       ),
-                      onPressed: () {},
+                      onPressed: () async {
+                        var db = await DatabaseHelper().database;
+
+                        const uuid = Uuid();
+                        String id = uuid.v4();
+                        Map<String, String> userChatMessage = {
+                          'message_id': id,
+                          'message_text': messageController.text,
+                          'role': "user",
+                          'chat_id': widget.id,
+                          'created_at': DateTime.now()
+                              .toIso8601String()
+                              .split('.')
+                              .first
+                              .replaceFirst('T', ' '),
+                        };
+                        setState(() {
+                          _messages.add(userChatMessage);
+                        });
+                        await db.insert("chat_messages", userChatMessage);
+                        messageController.clear();
+                      },
                     ),
                   ),
                 ],
