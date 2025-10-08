@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:chat_ai_offline/database_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
+import 'package:llama_cpp/llama_cpp.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ChatWidget extends StatefulWidget {
   const ChatWidget({super.key, required this.id});
@@ -17,6 +21,8 @@ class ChatWidget extends StatefulWidget {
 class _ChatWidgetState extends State<ChatWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final List<Map<String, dynamic>> _messages = [];
+  StreamSubscription<String>? _assistantSub;
+
   var title = "Chat";
 
   void _getData() async {
@@ -44,6 +50,46 @@ class _ChatWidgetState extends State<ChatWidget> {
   @override
   void dispose() {
     super.dispose();
+  }
+
+  Future<Stream<String>> chat(String question) async {
+    final prefs = await SharedPreferences.getInstance();
+    final filePath = prefs.getString('filePath');
+    final llama = await LlamaCpp.load(filePath ?? "", verbose: false);
+    return llama.answer(question,
+        temperature: 0.1, topK: 30, topP: 0.8, penaltyRepeat: 1.2);
+  }
+
+  void _startAssistantStream(Stream<String> stream) {
+    // Cancel any previous streaming subscription
+    _assistantSub?.cancel();
+
+    // Add placeholder assistant message and remember its index
+    setState(() {
+      _messages.add({"role": "assistant", "message_text": ""});
+    });
+    final int assistantIndex = _messages.length - 1;
+
+    _assistantSub = stream.listen(
+      (chunk) {
+        // Append incoming chunk to the placeholder message
+        setState(() {
+          final prev = _messages[assistantIndex]["message_text"] ?? "";
+          _messages[assistantIndex]["message_text"] = prev + chunk;
+        });
+      },
+      onError: (err) {
+        setState(() {
+          _messages[assistantIndex]["message_text"] =
+              "Error receiving assistant response: $err";
+        });
+        _assistantSub = null;
+      },
+      onDone: () {
+        _assistantSub = null;
+      },
+      cancelOnError: true,
+    );
   }
 
   // ignore: slash_for_doc_comments
@@ -380,6 +426,8 @@ class _ChatWidgetState extends State<ChatWidget> {
                           _messages.add(userChatMessage);
                         });
                         await db.insert("chat_messages", userChatMessage);
+                        _startAssistantStream(
+                            await chat(messageController.text));
                         messageController.clear();
                       },
                     ),
