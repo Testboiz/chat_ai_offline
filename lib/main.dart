@@ -7,7 +7,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   final filePath = prefs.getString('filePath');
-  runApp(MyApp(initialRoute: filePath == null ? '/home' : '/dashboard'));
+  runApp(MyApp(initialRoute: filePath == null ? '/home' : '/chat_list'));
 }
 
 class MyApp extends StatelessWidget {
