@@ -1,6 +1,5 @@
 import 'package:chat_ai_offline/database_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gemma/core/api/flutter_gemma.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:uuid/uuid.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,9 +17,12 @@ class ChatWidget extends StatefulWidget {
 }
 
 class _ChatWidgetState extends State<ChatWidget> {
+  TextEditingController messageController = TextEditingController();
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final List<Map<String, dynamic>> _messages = [];
+  late final InferenceChat chatSession;
   var title = "Chat";
+  bool sendDisable = true;
 
   void _getData() async {
     final db = await DatabaseHelper().database;
@@ -38,27 +40,111 @@ class _ChatWidgetState extends State<ChatWidget> {
     });
   }
 
-  void chat() async {
+  void initializeChat() async {
     var prefs = await SharedPreferences.getInstance();
     var filePath = prefs.get("tflitePath") as String;
     await FlutterGemma.installModel(
       modelType: ModelType.llama,
     ).fromFile(filePath).install();
-    final inferenceModel = await FlutterGemma.getActiveModel(
-      maxTokens: 2048,
-      preferredBackend: PreferredBackend.gpu,
-    );
 
+    final inferenceModel = await FlutterGemma.getActiveModel(
+      maxTokens: 1024,
+      preferredBackend: PreferredBackend.cpu,
+    );
     final chat = await inferenceModel.createChat();
-    await chat.addQueryChunk(Message.text(text: 'Hello!', isUser: true));
-    final response = await chat.generateChatResponse();
-    print(response);
+
+    setState(() {
+      chatSession = chat;
+      sendDisable = false;
+    });
+  }
+
+  void chatButtonOnPressed() async {
+    var db = await DatabaseHelper().database;
+
+    const uuid = Uuid();
+    String id = uuid.v4();
+    Map<String, String> userChatMessage = {
+      'message_id': id,
+      'message_text': messageController.text,
+      'role': "user",
+      'chat_id': widget.id,
+      'created_at': DateTime.now()
+          .toIso8601String()
+          .split('.')
+          .first
+          .replaceFirst('T', ' '),
+    };
+    setState(() {
+      _messages.add(userChatMessage);
+    });
+    await db.insert("chat_messages", userChatMessage);
+    chat(messageController.text);
+    messageController.clear();
+  }
+
+  void chat(String message) async {
+
+    await chatSession.addQueryChunk(Message.text(text: message, isUser: true));
+    final uuid = Uuid().v4();
+
+    final aiChatMessage = {
+      'message_id': uuid,
+      'message_text': "",
+      'role': "assistant",
+      'chat_id': widget.id,
+      'created_at': DateTime.now()
+          .toIso8601String()
+          .split('.')
+          .first
+          .replaceFirst('T', ' '),
+    };
+
+    setState(() {
+      _messages.add(aiChatMessage);
+    });
+    int index =
+        _messages.indexWhere((message) => message['message_id'] == uuid);
+
+    chatSession.generateChatResponseAsync().listen((response) {
+      if (response is TextResponse) {
+        // print('Text token: ${response.token}');
+        setState(() {
+          _messages[index]["message_text"] += response.token;
+        });
+      }
+    });
+  }
+
+  void chatButtonPressed() async {
+    var db = await DatabaseHelper().database;
+
+    const uuid = Uuid();
+    String id = uuid.v4();
+    Map<String, String> userChatMessage = {
+      'message_id': id,
+      'message_text': messageController.text,
+      'role': "user",
+      'chat_id': widget.id,
+      'created_at': DateTime.now()
+          .toIso8601String()
+          .split('.')
+          .first
+          .replaceFirst('T', ' '),
+    };
+    setState(() {
+      _messages.add(userChatMessage);
+    });
+    await db.insert("chat_messages", userChatMessage);
+    chat(messageController.text);
+    messageController.clear();
   }
 
   @override
   void initState() {
     super.initState();
     _getData();
+    initializeChat();
   }
 
   @override
@@ -162,7 +248,6 @@ class _ChatWidgetState extends State<ChatWidget> {
 
   @override
   Widget build(BuildContext context) {
-    TextEditingController messageController = TextEditingController();
     TextEditingController titleController = TextEditingController(text: title);
 
     return Scaffold(
@@ -369,7 +454,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                     padding: const EdgeInsets.only(left: 4),
                     child: IconButton(
                       icon: Icon(
-                        Icons.send,
+                        sendDisable ? Icons.hourglass_bottom : Icons.send,
                         color: Colors.white,
                         size: 24,
                       ),
@@ -380,29 +465,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                         minimumSize: const Size.fromRadius(30),
                         backgroundColor: const Color.fromARGB(255, 75, 57, 239),
                       ),
-                      onPressed: () async {
-                        var db = await DatabaseHelper().database;
-
-                        const uuid = Uuid();
-                        String id = uuid.v4();
-                        Map<String, String> userChatMessage = {
-                          'message_id': id,
-                          'message_text': messageController.text,
-                          'role': "user",
-                          'chat_id': widget.id,
-                          'created_at': DateTime.now()
-                              .toIso8601String()
-                              .split('.')
-                              .first
-                              .replaceFirst('T', ' '),
-                        };
-                        setState(() {
-                          _messages.add(userChatMessage);
-                        });
-                        await db.insert("chat_messages", userChatMessage);
-                        chat();
-                        messageController.clear();
-                      },
+                      onPressed: sendDisable ? null : chatButtonOnPressed,
                     ),
                   ),
                 ],

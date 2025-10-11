@@ -1,5 +1,6 @@
 import 'package:chat_ai_offline/chat_list.dart';
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
@@ -46,6 +47,22 @@ class _HomePageWidgetState extends State<HomePageWidget> {
   @override
   void dispose() {
     super.dispose();
+  }
+
+  Future<void> pickFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      // allowedExtensions: ['task'],
+    );
+    if (result != null) {
+      final filePath = result.files.single.path!;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('tflitePath', filePath);
+      if (mounted) {
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (context) => ChatListWidget()));
+      }
+    }
   }
 
   // ignore: slash_for_doc_comments
@@ -98,10 +115,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
               ),
             ),
             ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => ChatListWidget()));
-              },
+              onPressed: pickFile,
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
                 backgroundColor: const Color.fromARGB(255, 75, 57, 239),
