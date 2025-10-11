@@ -1,6 +1,9 @@
 import 'package:chat_ai_offline/database_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gemma/core/api/flutter_gemma.dart';
+import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:uuid/uuid.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ChatWidget extends StatefulWidget {
   const ChatWidget({super.key, required this.id});
@@ -33,6 +36,23 @@ class _ChatWidgetState extends State<ChatWidget> {
       _messages.addAll(queryData);
       title = tableInfo[0]["chat_name"] as String;
     });
+  }
+
+  void chat() async {
+    var prefs = await SharedPreferences.getInstance();
+    var filePath = prefs.get("tflitePath") as String;
+    await FlutterGemma.installModel(
+      modelType: ModelType.llama,
+    ).fromFile(filePath).install();
+    final inferenceModel = await FlutterGemma.getActiveModel(
+      maxTokens: 2048,
+      preferredBackend: PreferredBackend.gpu,
+    );
+
+    final chat = await inferenceModel.createChat();
+    await chat.addQueryChunk(Message.text(text: 'Hello!', isUser: true));
+    final response = await chat.generateChatResponse();
+    print(response);
   }
 
   @override
@@ -380,6 +400,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                           _messages.add(userChatMessage);
                         });
                         await db.insert("chat_messages", userChatMessage);
+                        chat();
                         messageController.clear();
                       },
                     ),

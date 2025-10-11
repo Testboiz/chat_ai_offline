@@ -5,8 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
-  final filePath = prefs.getString('filePath');
-  runApp(MyApp(initialRoute: filePath == null ? '/home' : '/dashboard'));
+  final filePath = prefs.getString('tflitePath');
+  runApp(MyApp(initialRoute: filePath == null ? '/home' : '/chat_list'));
 }
 
 class MyApp extends StatelessWidget {
