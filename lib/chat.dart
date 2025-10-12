@@ -1,6 +1,7 @@
 import 'package:chat_ai_offline/database_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -21,6 +22,8 @@ class _ChatWidgetState extends State<ChatWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final List<Map<String, dynamic>> _messages = [];
   late final InferenceChat chatSession;
+  late final Database db;
+  late final Uuid uuid;
   var title = "Chat";
   bool sendDisable = true;
 
@@ -52,17 +55,19 @@ class _ChatWidgetState extends State<ChatWidget> {
       preferredBackend: PreferredBackend.cpu,
     );
     final chat = await inferenceModel.createChat();
+    var database = await DatabaseHelper().database;
+
+    const generator = Uuid();
 
     setState(() {
       chatSession = chat;
       sendDisable = false;
+      db = database;
+      uuid = generator;
     });
   }
 
   void chatButtonOnPressed() async {
-    var db = await DatabaseHelper().database;
-
-    const uuid = Uuid();
     String id = uuid.v4();
     Map<String, String> userChatMessage = {
       'message_id': id,
@@ -83,13 +88,12 @@ class _ChatWidgetState extends State<ChatWidget> {
     messageController.clear();
   }
 
-  void chat(String message) async {
-
+  Future<void> chat(String message) async {
     await chatSession.addQueryChunk(Message.text(text: message, isUser: true));
-    final uuid = Uuid().v4();
+    String id = uuid.v4();
 
     final aiChatMessage = {
-      'message_id': uuid,
+      'message_id': id,
       'message_text': "",
       'role': "assistant",
       'chat_id': widget.id,
@@ -103,23 +107,24 @@ class _ChatWidgetState extends State<ChatWidget> {
     setState(() {
       _messages.add(aiChatMessage);
     });
-    int index =
-        _messages.indexWhere((message) => message['message_id'] == uuid);
+    int index = _messages.indexWhere((message) => message['message_id'] == id);
 
     chatSession.generateChatResponseAsync().listen((response) {
       if (response is TextResponse) {
-        // print('Text token: ${response.token}');
         setState(() {
           _messages[index]["message_text"] += response.token;
         });
       }
     });
+    setState(() {
+      sendDisable = false;
+    });
   }
 
   void chatButtonPressed() async {
-    var db = await DatabaseHelper().database;
-
-    const uuid = Uuid();
+    setState(() {
+      sendDisable = true;
+    });
     String id = uuid.v4();
     Map<String, String> userChatMessage = {
       'message_id': id,
@@ -136,8 +141,11 @@ class _ChatWidgetState extends State<ChatWidget> {
       _messages.add(userChatMessage);
     });
     await db.insert("chat_messages", userChatMessage);
-    chat(messageController.text);
+    await chat(messageController.text);
     messageController.clear();
+    setState(() {
+      sendDisable = false;
+    });
   }
 
   @override
@@ -151,13 +159,6 @@ class _ChatWidgetState extends State<ChatWidget> {
   void dispose() {
     super.dispose();
   }
-
-  // ignore: slash_for_doc_comments
-  /**
-   * Backlog
-   * TODO : (optional) add streaming
-   * TODO : Make Edit chat, and send button work
-   */
 
   Widget assistantChatBubble(String message) {
     return Padding(

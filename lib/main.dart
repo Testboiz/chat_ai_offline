@@ -65,12 +65,6 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     }
   }
 
-  // ignore: slash_for_doc_comments
-  /**
-   * Backlog
-   * TODO : Add ggml library
-   */
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

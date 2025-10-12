@@ -1,6 +1,8 @@
 import 'package:chat_ai_offline/chat.dart';
 import 'package:chat_ai_offline/database_helper.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import "package:timeago/timeago.dart" as timeago;
 
@@ -56,12 +58,6 @@ LEFT JOIN latest c
   void dispose() {
     super.dispose();
   }
-
-  // ignore: slash_for_doc_comments
-  /**
-   * Backlog
-   * TODO : Make change model button work
-   */
 
   @override
   Widget build(BuildContext context) {
@@ -149,8 +145,22 @@ LEFT JOIN latest c
                             ),
                           ),
                           ElevatedButton(
-                            onPressed: () =>
-                                Navigator.pop(alertDialogContext, true),
+                            onPressed: () async {
+                              FilePickerResult? result =
+                                  await FilePicker.platform.pickFiles(
+                                type: FileType.custom,
+                                // allowedExtensions: ['task'],
+                              );
+                              if (result != null) {
+                                final filePath = result.files.single.path!;
+                                final prefs =
+                                    await SharedPreferences.getInstance();
+                                await prefs.setString('tflitePath', filePath);
+                                if (alertDialogContext.mounted) {
+                                  Navigator.pop(alertDialogContext, true);
+                                }
+                              }
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor:
                                   const Color.fromARGB(255, 75, 57, 239),
