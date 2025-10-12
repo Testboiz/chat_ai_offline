@@ -19,7 +19,43 @@ class DatabaseHelper {
     return _database!;
   }
 
-  // TODO : modify after testing 
+  Future<Database> _setupDatabase() async {
+    return await openDatabase(
+      join(await getDatabasesPath(), 'chat_database.db'),
+      version: 1,
+      onCreate: (db, version) {
+        // Run the CREATE TABLE statement on the database.
+        return db.transaction((txn) async {
+          txn.execute("""
+CREATE TABLE IF NOT EXISTS chats (
+    chat_id      TEXT    PRIMARY KEY
+                         NOT NULL,
+    chat_name    TEXT    NOT NULL,
+    created_at   INTEGER DEFAULT (CURRENT_TIMESTAMP) 
+                         NOT NULL,
+    updated_at   INTEGER DEFAULT (CURRENT_TIMESTAMP) 
+                         NOT NULL,
+    last_chat_at INTEGER DEFAULT (CURRENT_TIMESTAMP) 
+);
+
+""");
+          txn.execute("""
+CREATE TABLE IF NOT EXISTS chat_messages (
+    message_id   TEXT NOT NULL,
+    message_text TEXT NOT NULL,
+    role         TEXT DEFAULT ('user' OR
+                               'assistant'),
+    chat_id      TEXT REFERENCES chats (chat_id),
+    created_at   TEXT NOT NULL
+                      DEFAULT (CURRENT_TIMESTAMP) 
+);
+""");
+        });
+      },
+    );
+  }
+
+  // TODO : change in favor of _setupDatabase in prod
   Future<Database> _openDb() async {
     final databasesPath = await getDatabasesPath();
     final path = join(databasesPath, "chat_database.db");
