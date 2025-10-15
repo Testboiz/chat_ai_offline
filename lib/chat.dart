@@ -1,6 +1,8 @@
+import 'dart:async';
+
 import 'package:chat_ai_offline/database_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:llama_flutter_android/llama_flutter_android.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,7 +23,6 @@ class _ChatWidgetState extends State<ChatWidget> {
   TextEditingController messageController = TextEditingController();
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final List<Map<String, dynamic>> _messages = [];
-  late final InferenceChat chatSession;
   late final Database db;
   late final Uuid uuid;
   var title = "Chat";
@@ -44,23 +45,11 @@ class _ChatWidgetState extends State<ChatWidget> {
   }
 
   void initializeChat() async {
-    var prefs = await SharedPreferences.getInstance();
-    var filePath = prefs.get("tflitePath") as String;
-    await FlutterGemma.installModel(
-      modelType: ModelType.llama,
-    ).fromFile(filePath).install();
-
-    final inferenceModel = await FlutterGemma.getActiveModel(
-      maxTokens: 1024,
-      preferredBackend: PreferredBackend.cpu,
-    );
-    final chat = await inferenceModel.createChat();
     var database = await DatabaseHelper().database;
 
     const generator = Uuid();
 
     setState(() {
-      chatSession = chat;
       sendDisable = false;
       db = database;
       uuid = generator;
@@ -89,7 +78,16 @@ class _ChatWidgetState extends State<ChatWidget> {
   }
 
   Future<void> chat(String message) async {
-    await chatSession.addQueryChunk(Message.text(text: message, isUser: true));
+    var prefs = await SharedPreferences.getInstance();
+    var filePath = prefs.get("tflitePath") as String;
+    final completer = Completer<void>();
+
+    final controller = LlamaController();
+
+    // Load model
+    await controller.loadModel(
+        modelPath: filePath, contextSize: 1024, gpuLayers: 1);
+
     String id = uuid.v4();
 
     final aiChatMessage = {
@@ -103,19 +101,37 @@ class _ChatWidgetState extends State<ChatWidget> {
           .first
           .replaceFirst('T', ' '),
     };
+    StreamSubscription? subscription;
+    subscription = controller
+        .generate(
+      prompt: 'apa itu program hello world?',
+      maxTokens: 512,
+      temperature: 0.7,
+    )
+        .listen(
+      (token) => print(token), // This will now work
+      onError: (error) {
+        print('Error: $error');
+        if (!completer.isCompleted) {
+          // 2. Signal completion with an error if one occurs
+          completer.completeError(error);
+        }
+      },
+      onDone: () {
+        print('Generation complete!');
+        if (!completer.isCompleted) {
+          // 3. Signal successful completion when the stream is done
+          completer.complete();
+        }
+      },
+    );
+    await completer.future;
 
-    setState(() {
-      _messages.add(aiChatMessage);
-    });
-    int index = _messages.indexWhere((message) => message['message_id'] == id);
-
-    chatSession.generateChatResponseAsync().listen((response) {
-      if (response is TextResponse) {
-        setState(() {
-          _messages[index]["message_text"] += response.token;
-        });
-      }
-    });
+// Stop generation mid-process (critical for UX!)
+    // await controller.stop();
+    // subscription.cancel();
+// Clean up
+    // await controller.dispose();
     setState(() {
       sendDisable = false;
     });
