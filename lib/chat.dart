@@ -101,26 +101,38 @@ class _ChatWidgetState extends State<ChatWidget> {
           .first
           .replaceFirst('T', ' '),
     };
+    setState(() {
+      _messages.add(aiChatMessage);
+      sendDisable = true;
+    });
+    int index = _messages.indexWhere((message) => message['message_id'] == id);
+
     StreamSubscription? subscription;
     subscription = controller
         .generate(
-      prompt: 'apa itu program hello world?',
-      maxTokens: 512,
+      prompt: message,
+      maxTokens: 64,
       temperature: 0.7,
     )
         .listen(
-      (token) => print(token), // This will now work
+      (token) {
+        setState(() {
+          _messages[index]["message_text"] += token;
+        });
+      },
       onError: (error) {
-        print('Error: $error');
+        setState(() {
+          sendDisable = false;
+        });
         if (!completer.isCompleted) {
-          // 2. Signal completion with an error if one occurs
           completer.completeError(error);
         }
       },
       onDone: () {
-        print('Generation complete!');
+        setState(() {
+          sendDisable = false;
+        });
         if (!completer.isCompleted) {
-          // 3. Signal successful completion when the stream is done
           completer.complete();
         }
       },
@@ -128,10 +140,11 @@ class _ChatWidgetState extends State<ChatWidget> {
     await completer.future;
 
 // Stop generation mid-process (critical for UX!)
-    // await controller.stop();
-    // subscription.cancel();
+    await controller.stop();
+    subscription.cancel();
+    await controller.dispose();
+
 // Clean up
-    // await controller.dispose();
     setState(() {
       sendDisable = false;
     });
