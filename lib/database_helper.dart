@@ -1,5 +1,5 @@
-import 'dart:io';
-import 'package:flutter/services.dart';
+// import 'dart:io';
+// import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -15,7 +15,7 @@ class DatabaseHelper {
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _openDb();
+    _database = await _setupDatabase();
     return _database!;
   }
 
@@ -24,7 +24,6 @@ class DatabaseHelper {
       join(await getDatabasesPath(), 'chat_database.db'),
       version: 1,
       onCreate: (db, version) {
-        // Run the CREATE TABLE statement on the database.
         return db.transaction((txn) async {
           txn.execute("""
 CREATE TABLE IF NOT EXISTS chats (
@@ -53,25 +52,5 @@ CREATE TABLE IF NOT EXISTS chat_messages (
         });
       },
     );
-  }
-
-  // TODO : change in favor of _setupDatabase in prod
-  Future<Database> _openDb() async {
-    final databasesPath = await getDatabasesPath();
-    final path = join(databasesPath, "chat_database.db");
-
-    await deleteDatabase(path); // remove after testing
-
-    try {
-      await Directory(dirname(path)).create(recursive: true);
-    } catch (_) {}
-
-    final data =
-        await rootBundle.load(join("assets", "db", "chat_database.db"));
-    final bytes =
-        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-    await File(path).writeAsBytes(bytes, flush: true);
-
-    return openDatabase(path);
   }
 }

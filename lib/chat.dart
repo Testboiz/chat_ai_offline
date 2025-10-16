@@ -79,7 +79,7 @@ class _ChatWidgetState extends State<ChatWidget> {
 
   Future<void> chat(String message) async {
     var prefs = await SharedPreferences.getInstance();
-    var filePath = prefs.get("tflitePath") as String;
+    var filePath = prefs.get("modelPath") as String;
     final completer = Completer<void>();
 
     final controller = LlamaController();
@@ -143,6 +143,8 @@ class _ChatWidgetState extends State<ChatWidget> {
     await controller.stop();
     subscription.cancel();
     await controller.dispose();
+    
+    await db.insert("chat_messages", aiChatMessage);
 
 // Clean up
     setState(() {

@@ -149,13 +149,13 @@ LEFT JOIN latest c
                               FilePickerResult? result =
                                   await FilePicker.platform.pickFiles(
                                 type: FileType.custom,
-                                // allowedExtensions: ['task'],
+                                allowedExtensions: ['gguf'],
                               );
                               if (result != null) {
                                 final filePath = result.files.single.path!;
                                 final prefs =
                                     await SharedPreferences.getInstance();
-                                await prefs.setString('tflitePath', filePath);
+                                await prefs.setString('modelPath', filePath);
                                 if (alertDialogContext.mounted) {
                                   Navigator.pop(alertDialogContext, true);
                                 }
