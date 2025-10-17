@@ -23,6 +23,8 @@ class _ChatWidgetState extends State<ChatWidget> {
   TextEditingController messageController = TextEditingController();
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final List<Map<String, dynamic>> _messages = [];
+  StreamSubscription? subscription;
+  final controller = LlamaController();
   late final Database db;
   late final Uuid uuid;
   var title = "Chat";
@@ -45,9 +47,18 @@ class _ChatWidgetState extends State<ChatWidget> {
   }
 
   void initializeChat() async {
+    var prefs = await SharedPreferences.getInstance();
+    var filePath = prefs.get("modelPath") as String;
+
     var database = await DatabaseHelper().database;
 
     const generator = Uuid();
+    bool isModelLoaded = await controller.isModelLoaded();
+
+    if (!isModelLoaded) {
+      await controller.loadModel(
+          modelPath: filePath, contextSize: 1024, gpuLayers: 1);
+    }
 
     setState(() {
       sendDisable = false;
@@ -78,15 +89,7 @@ class _ChatWidgetState extends State<ChatWidget> {
   }
 
   Future<void> chat(String message) async {
-    var prefs = await SharedPreferences.getInstance();
-    var filePath = prefs.get("modelPath") as String;
     final completer = Completer<void>();
-
-    final controller = LlamaController();
-
-    // Load model
-    await controller.loadModel(
-        modelPath: filePath, contextSize: 1024, gpuLayers: 1);
 
     String id = uuid.v4();
 
@@ -107,7 +110,6 @@ class _ChatWidgetState extends State<ChatWidget> {
     });
     int index = _messages.indexWhere((message) => message['message_id'] == id);
 
-    StreamSubscription? subscription;
     subscription = controller
         .generate(
       prompt: message,
@@ -128,10 +130,11 @@ class _ChatWidgetState extends State<ChatWidget> {
           completer.completeError(error);
         }
       },
-      onDone: () {
+      onDone: () async {
         setState(() {
           sendDisable = false;
         });
+        await db.insert("chat_messages", aiChatMessage);
         if (!completer.isCompleted) {
           completer.complete();
         }
@@ -141,10 +144,8 @@ class _ChatWidgetState extends State<ChatWidget> {
 
 // Stop generation mid-process (critical for UX!)
     await controller.stop();
-    subscription.cancel();
+    subscription?.cancel();
     await controller.dispose();
-    
-    await db.insert("chat_messages", aiChatMessage);
 
 // Clean up
     setState(() {
@@ -188,6 +189,8 @@ class _ChatWidgetState extends State<ChatWidget> {
 
   @override
   void dispose() {
+    subscription?.cancel();
+
     super.dispose();
   }
 
