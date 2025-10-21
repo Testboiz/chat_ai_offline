@@ -3,11 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+Future<String> getInitialRoute() async {
   final prefs = await SharedPreferences.getInstance();
   final filePath = prefs.getString('modelPath');
-  runApp(MyApp(initialRoute: filePath == null ? '/home' : '/chat_list'));
+  return filePath == null ? '/home' : '/chat_list';
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // final prefs = await SharedPreferences.getInstance();
+  // final filePath = prefs.getString('modelPath');
+  final initialRoute = await getInitialRoute();
+  runApp(MyApp(initialRoute: initialRoute));
 }
 
 class MyApp extends StatelessWidget {
@@ -58,10 +65,8 @@ class _HomePageWidgetState extends State<HomePageWidget> {
       final filePath = result.files.single.path!;
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('modelPath', filePath);
-      if (mounted) {
-        Navigator.of(context)
-            .push(MaterialPageRoute(builder: (context) => ChatListWidget()));
-      }
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) => ChatListWidget()));
     }
   }
 
