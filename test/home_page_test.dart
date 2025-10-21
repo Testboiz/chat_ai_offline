@@ -9,8 +9,6 @@ import 'package:chat_ai_offline/main.dart';
 import 'package:mockito/mockito.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'mocks/database_mock.mocks.dart';
-
 class MockNavigatorObserver extends Mock implements NavigatorObserver {}
 
 class FakeFilePickerPlatform extends Fake
@@ -46,15 +44,12 @@ class FakeFilePickerPlatform extends Fake
     bool withData = false,
     bool withReadStream = false,
   }) async {
-    // Store arguments for verification
-    lastCallArgs = {
-      'type': type,
-      'allowedExtensions': allowedExtensions,
-      'allowMultiple': allowMultiple,
-      'allowCompression': allowCompression,
-      // Add any other args you want to verify in your tests
-    };
-
+    final fakeFile = PlatformFile(
+      name: 'model.gguf',
+      size: 1024,
+      path: '/fake/path/model.gguf',
+    );
+    _stubbedResult = FilePickerResult([fakeFile]);
     // Return the stubbed result
     return _stubbedResult;
   }
@@ -68,6 +63,7 @@ void main() {
     fakePicker = FakeFilePickerPlatform();
     mockObserver = MockNavigatorObserver();
     FilePicker.platform = fakePicker;
+    SharedPreferences.setMockInitialValues({});
   });
   test('Tampilan awal pada pembukaan aplikasi adalah HomePageWidget()',
       () async {
@@ -86,16 +82,12 @@ void main() {
   testWidgets(
       "Tombol Pilih Model melakukan set model dan navigasi ke ChatWidget()",
       (WidgetTester tester) async {
-    final mockService = MockDatabaseHelper();
-
     await tester.pumpWidget(MaterialApp(
       home: HomePageWidget(),
       navigatorObservers: [mockObserver],
     ));
     await tester.tap(find.byType(ElevatedButton));
     await tester.pumpAndSettle();
-    verifyNever(mockService.database); // TODO : issue 1, db did not get run
-
-    expect(find.byType(ChatListWidget), findsNothing); // TODO : issue 2, does not push
+    expect(find.byType(ChatListWidget), findsOneWidget);
   });
 }
