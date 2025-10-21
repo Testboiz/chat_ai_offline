@@ -12,33 +12,26 @@ import 'package:shared_preferences/shared_preferences.dart';
 class MockNavigatorObserver extends Mock implements NavigatorObserver {}
 
 class FakeFilePickerPlatform extends Fake
-    with
-        MockPlatformInterfaceMixin // Use this for platform interface compliance
-    implements
-        FilePicker {
-  // This will hold the "stubbed" result you want to return
+    with MockPlatformInterfaceMixin
+    implements FilePicker {
   FilePickerResult? _stubbedResult;
 
-  // A helper method to set the result before a test
   void setPickerResult(FilePickerResult? result) {
     _stubbedResult = result;
   }
 
-  // We can also store the arguments it was called with for verification
   Map<String, dynamic>? lastCallArgs;
 
-  // 2. Override the method you need to test
   @override
   Future<FilePickerResult?> pickFiles({
-    // These parameters match the latest file_picker_platform_interface
     bool allowCompression = true,
     bool allowMultiple = false,
     List<String>? allowedExtensions,
-    int compressionQuality = 20, // Note: Not nullable, has a default
+    int compressionQuality = 20,
     String? dialogTitle,
     String? initialDirectory,
     bool lockParentWindow = false,
-    dynamic Function(FilePickerStatus)? onFileLoading, // Corrected type
+    dynamic Function(FilePickerStatus)? onFileLoading,
     bool readSequential = false,
     FileType type = FileType.any,
     bool withData = false,
@@ -50,7 +43,6 @@ class FakeFilePickerPlatform extends Fake
       path: '/fake/path/model.gguf',
     );
     _stubbedResult = FilePickerResult([fakeFile]);
-    // Return the stubbed result
     return _stubbedResult;
   }
 }
@@ -88,6 +80,8 @@ void main() {
     ));
     await tester.tap(find.byType(ElevatedButton));
     await tester.pumpAndSettle();
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('modelPath'), '/fake/path/model.gguf');
     expect(find.byType(ChatListWidget), findsOneWidget);
   });
 }

@@ -65,8 +65,10 @@ class _HomePageWidgetState extends State<HomePageWidget> {
       final filePath = result.files.single.path!;
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('modelPath', filePath);
-      Navigator.of(context)
-          .push(MaterialPageRoute(builder: (context) => ChatListWidget()));
+      if (mounted) {
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (context) => ChatListWidget()));
+      }
     }
   }
 
