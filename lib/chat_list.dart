@@ -7,7 +7,8 @@ import 'package:uuid/uuid.dart';
 import "package:timeago/timeago.dart" as timeago;
 
 class ChatListWidget extends StatefulWidget {
-  const ChatListWidget({super.key});
+  const ChatListWidget({super.key, required this.dbHelper});
+  final DatabaseHelper dbHelper;
 
   static String routeName = 'ChatList';
   static String routePath = '/chatList';
@@ -21,7 +22,7 @@ class _ChatListWidgetState extends State<ChatListWidget> {
   late Future<List<Map<String, dynamic>>> chatData;
 
   Future<List<Map<String, dynamic>>> _getData() async {
-    final db = await DatabaseHelper().database;
+    final db = await widget.dbHelper.database;
     return await db.rawQuery("""
 WITH latest AS (
   SELECT *,
@@ -68,7 +69,7 @@ LEFT JOIN latest c
         onPressed: () async {
           var uuid = Uuid();
           String id = uuid.v4();
-          var db = await DatabaseHelper().database;
+          var db = await widget.dbHelper.database;
           try {
             await db.insert("chats", {
               'chat_id': id,
