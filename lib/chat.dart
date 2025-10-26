@@ -191,7 +191,6 @@ class _ChatWidgetState extends State<ChatWidget> {
     widget.controller.stop();
     subscription?.cancel();
     widget.controller.dispose();
-    db.insert("chat_messages", aiChatMessage);
 
     super.dispose();
   }
