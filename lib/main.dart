@@ -1,12 +1,21 @@
 import 'package:chat_ai_offline/chat_list.dart';
+import 'package:chat_ai_offline/database_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+Future<String> getInitialRoute() async {
+  final prefs = await SharedPreferences.getInstance();
+  final filePath = prefs.getString('modelPath');
+  return filePath == null ? '/home' : '/chat_list';
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final prefs = await SharedPreferences.getInstance();
-  final filePath = prefs.getString('filePath');
-  runApp(MyApp(initialRoute: filePath == null ? '/home' : '/dashboard'));
+  // final prefs = await SharedPreferences.getInstance();
+  // final filePath = prefs.getString('modelPath');
+  final initialRoute = await getInitialRoute();
+  runApp(MyApp(initialRoute: initialRoute));
 }
 
 class MyApp extends StatelessWidget {
@@ -19,7 +28,9 @@ class MyApp extends StatelessWidget {
       initialRoute: initialRoute,
       routes: {
         '/home': (_) => HomePageWidget(),
-        '/chat_list': (_) => ChatListWidget(),
+        '/chat_list': (_) => ChatListWidget(
+              dbHelper: DatabaseHelper(),
+            ),
       },
     );
   }
@@ -48,12 +59,23 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     super.dispose();
   }
 
-  // ignore: slash_for_doc_comments
-  /**
-   * Backlog
-   * TODO : Refactor colors and repeating components
-   * TODO : Add ggml library
-   */
+  Future<void> pickFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['gguf'],
+    );
+    if (result != null) {
+      final filePath = result.files.single.path!;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('modelPath', filePath);
+      if (mounted) {
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => ChatListWidget(
+                  dbHelper: DatabaseHelper(),
+                )));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -99,10 +121,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
               ),
             ),
             ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => ChatListWidget()));
-              },
+              onPressed: pickFile,
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
                 backgroundColor: const Color.fromARGB(255, 75, 57, 239),
