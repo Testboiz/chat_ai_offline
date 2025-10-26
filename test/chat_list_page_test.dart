@@ -65,7 +65,8 @@ void main() {
     databaseFactory = databaseFactoryFfi;
   });
 
-  testWidgets("Tombol + pada daftar chat membuat chat baru",
+  testWidgets(
+      "Komponen pada ChatListWidget() dapat diklik dan membuka ChatWidget()",
       (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({'modelPath': '/path/to/model'});
 
@@ -73,6 +74,14 @@ void main() {
     MockDatabase sqlitedb = MockDatabase();
     when(database.database).thenAnswer((_) async => sqlitedb);
     when(sqlitedb.insert('', {})).thenAnswer((_) async => 1);
+    when(sqlitedb.rawQuery(any)).thenAnswer((_) async => [
+          {
+            "chat_id": "1",
+            "chat_name": "Lorem Ipsum",
+            "message_text": "Dolor Sit Amet",
+            "last_chat_at": "1970-01-01"
+          }
+        ]);
 
     await tester.pumpWidget(MaterialApp(
       home: ChatListWidget(
@@ -80,7 +89,9 @@ void main() {
       ),
       navigatorObservers: [mockObserver],
     ));
-    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.descendant(
+        of: find.byType(ListView), matching: find.byType(GestureDetector)));
     await tester.pumpAndSettle();
     expect(find.byType(ChatWidget), findsOneWidget);
   });
@@ -102,5 +113,47 @@ void main() {
     await tester.pumpAndSettle();
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString('modelPath'), '/new/fake/path/model.gguf');
+  });
+
+  testWidgets("Tampilan ChatListWidget() pada saat kosong menampilkan teks",
+      (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({'modelPath': '/path/to/model'});
+
+    MockDatabaseHelper database = MockDatabaseHelper();
+    MockDatabase sqlitedb = MockDatabase();
+    when(database.database).thenAnswer((_) async => sqlitedb);
+    when(sqlitedb.insert('', {})).thenAnswer((_) async => 1);
+    when(sqlitedb.rawQuery('')).thenAnswer((_) async => []);
+
+    await tester.pumpWidget(MaterialApp(
+      home: ChatListWidget(
+        dbHelper: database,
+      ),
+      navigatorObservers: [mockObserver],
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text("Belum ada chat, Ayo kita chat dengan klik tombol +"),
+        findsOne);
+  });
+
+  testWidgets(
+      "Tombol Icon + pada ChatListWidget() akan membuat chat baru dan navigasi ke ChatWidget ",
+      (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({'modelPath': '/path/to/model'});
+
+    MockDatabaseHelper database = MockDatabaseHelper();
+    MockDatabase sqlitedb = MockDatabase();
+    when(database.database).thenAnswer((_) async => sqlitedb);
+    when(sqlitedb.insert('', {})).thenAnswer((_) async => 1);
+
+    await tester.pumpWidget(MaterialApp(
+      home: ChatListWidget(
+        dbHelper: database,
+      ),
+      navigatorObservers: [mockObserver],
+    ));
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    expect(find.byType(ChatWidget), findsOneWidget);
   });
 }

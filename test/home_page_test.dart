@@ -72,7 +72,7 @@ void main() {
   });
 
   testWidgets(
-      "Tombol Pilih Model melakukan set model dan navigasi ke ChatWidget()",
+      "Tombol Pilih Model melakukan set model dan navigasi ke ChatListWidget()",
       (WidgetTester tester) async {
     await tester.pumpWidget(MaterialApp(
       home: HomePageWidget(),
