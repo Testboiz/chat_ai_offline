@@ -85,8 +85,7 @@ void main() {
     expect(find.byType(ChatWidget), findsOneWidget);
   });
 
-  testWidgets(
-      "Tombol Pilih Model melakukan set model dan navigasi ke ChatWidget()",
+  testWidgets("Tombol pada top bar halaman chat mengubah model",
       (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({'modelPath': '/path/to/model'});
     MockDatabaseHelper database = MockDatabaseHelper();

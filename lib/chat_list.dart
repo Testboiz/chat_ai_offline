@@ -2,6 +2,7 @@ import 'package:chat_ai_offline/chat.dart';
 import 'package:chat_ai_offline/database_helper.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:llama_flutter_android/llama_flutter_android.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import "package:timeago/timeago.dart" as timeago;
@@ -88,7 +89,11 @@ LEFT JOIN latest c
             Navigator.of(context)
                 .push(
                   MaterialPageRoute(
-                    builder: (context) => ChatWidget(id: id),
+                    builder: (context) => ChatWidget(
+                      id: id,
+                      databaseHelper: DatabaseHelper(),
+                      controller: LlamaController(),
+                    ),
                   ),
                 )
                 .then((_) => _loadData());
@@ -217,6 +222,8 @@ LEFT JOIN latest c
                               MaterialPageRoute(
                                 builder: (context) => ChatWidget(
                                   id: chatData["chat_id"],
+                                  databaseHelper: DatabaseHelper(),
+                                  controller: LlamaController(),
                                 ),
                               ),
                             )

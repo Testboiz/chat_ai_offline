@@ -8,7 +8,13 @@ import 'package:uuid/uuid.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ChatWidget extends StatefulWidget {
-  const ChatWidget({super.key, required this.id});
+  const ChatWidget(
+      {super.key,
+      required this.id,
+      required this.databaseHelper,
+      required this.controller});
+  final DatabaseHelper databaseHelper;
+  final LlamaController controller;
 
   static String routeName = 'Chat';
   static String routePath = '/chat';
@@ -24,14 +30,14 @@ class _ChatWidgetState extends State<ChatWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final List<Map<String, dynamic>> _messages = [];
   StreamSubscription? subscription;
-  final controller = LlamaController();
+  // final controller = LlamaController();
   late final Database db;
   late final Uuid uuid;
   var title = "Chat";
   bool sendDisable = true;
 
   void _getData() async {
-    final db = await DatabaseHelper().database;
+    final db = await widget.databaseHelper.database;
     var queryData = await db.query('chat_messages',
         orderBy: "created_at ASC",
         where: "chat_id = ?",
@@ -49,15 +55,14 @@ class _ChatWidgetState extends State<ChatWidget> {
   void initializeChat() async {
     var prefs = await SharedPreferences.getInstance();
     var filePath = prefs.get("modelPath") as String;
-
-    var database = await DatabaseHelper().database;
+    var database = await widget.databaseHelper.database;
 
     const generator = Uuid();
-    bool isModelLoaded = await controller.isModelLoaded();
+    bool isModelLoaded = await widget.controller.isModelLoaded();
 
     if (!isModelLoaded) {
-      await controller.loadModel(
-          modelPath: filePath, contextSize: 1024, gpuLayers: 1);
+      await widget.controller
+          .loadModel(modelPath: filePath, contextSize: 1024, gpuLayers: 1);
     }
 
     setState(() {
@@ -110,7 +115,7 @@ class _ChatWidgetState extends State<ChatWidget> {
     });
     int index = _messages.indexWhere((message) => message['message_id'] == id);
 
-    subscription = controller
+    subscription = widget.controller
         .generate(
       prompt: message,
       maxTokens: 64,
@@ -143,9 +148,9 @@ class _ChatWidgetState extends State<ChatWidget> {
     await completer.future;
 
 // Stop generation mid-process (critical for UX!)
-    await controller.stop();
+    await widget.controller.stop();
     subscription?.cancel();
-    await controller.dispose();
+    await widget.controller.dispose();
 
 // Clean up
     setState(() {
@@ -376,7 +381,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                           style: TextStyle(color: Colors.white),
                         ),
                         onPressed: () async {
-                          var db = await DatabaseHelper().database;
+                          var db = await widget.databaseHelper.database;
                           await db.update(
                               "chats", {'chat_name': titleController.text},
                               where: "chat_id = ?", whereArgs: [widget.id]);

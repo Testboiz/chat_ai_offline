@@ -1,4 +1,5 @@
 import 'package:chat_ai_offline/chat_list.dart';
+import 'package:chat_ai_offline/database_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,7 +28,9 @@ class MyApp extends StatelessWidget {
       initialRoute: initialRoute,
       routes: {
         '/home': (_) => HomePageWidget(),
-        '/chat_list': (_) => ChatListWidget(),
+        '/chat_list': (_) => ChatListWidget(
+              dbHelper: DatabaseHelper(),
+            ),
       },
     );
   }
@@ -66,8 +69,10 @@ class _HomePageWidgetState extends State<HomePageWidget> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('modelPath', filePath);
       if (mounted) {
-        Navigator.of(context)
-            .push(MaterialPageRoute(builder: (context) => ChatListWidget()));
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => ChatListWidget(
+                  dbHelper: DatabaseHelper(),
+                )));
       }
     }
   }
