@@ -147,12 +147,6 @@ class _ChatWidgetState extends State<ChatWidget> {
     );
     await completer.future;
 
-// Stop generation mid-process (critical for UX!)
-    await widget.controller.stop();
-    subscription?.cancel();
-    await widget.controller.dispose();
-
-// Clean up
     setState(() {
       sendDisable = false;
     });
@@ -194,7 +188,10 @@ class _ChatWidgetState extends State<ChatWidget> {
 
   @override
   void dispose() {
+    widget.controller.stop();
     subscription?.cancel();
+    widget.controller.dispose();
+    db.insert("chat_messages", aiChatMessage);
 
     super.dispose();
   }
