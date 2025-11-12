@@ -1,7 +1,7 @@
 name: chat_ai_offline
 description: "A new Flutter project."
 publish_to: "none"
-version: 0.1.0
+version: 1.0.0+1
 
 environment:
   sdk: ^3.6.0
@@ -28,8 +28,14 @@ dev_dependencies:
   url_launcher_platform_interface: ^2.3.2
   mocktail: ^1.0.4
   sqflite_common_ffi: ^2.3.6
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   assets:
     - assets/db/chat_database.db
   uses-material-design: true
+  generate: true
+
+flutter_icons:
+  android: true
+  image_path: "assets/icon.jpg"

@@ -12,8 +12,6 @@ Future<String> getInitialRoute() async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // final prefs = await SharedPreferences.getInstance();
-  // final filePath = prefs.getString('modelPath');
   final initialRoute = await getInitialRoute();
   runApp(MyApp(initialRoute: initialRoute));
 }
@@ -26,6 +24,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       initialRoute: initialRoute,
+      debugShowCheckedModeBanner: false,
       routes: {
         '/home': (_) => HomePageWidget(),
         '/chat_list': (_) => ChatListWidget(
