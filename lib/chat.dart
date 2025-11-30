@@ -115,13 +115,16 @@ class _ChatWidgetState extends State<ChatWidget> {
     });
     int index = _messages.indexWhere((message) => message['message_id'] == id);
 
-    subscription = widget.controller
-        .generate(
-      prompt: message,
-      maxTokens: 64,
-      temperature: 0.7,
-    )
-        .listen(
+    subscription = widget.controller.generateChat(
+      messages: [
+        ChatMessage(
+            role: 'system',
+            content: 'Anda adalah asisten AI yang membantu pengguna.'),
+        ChatMessage(role: 'user', content: message),
+      ],
+      maxTokens: 128,
+      temperature: 0.1,
+    ).listen(
       (token) {
         setState(() {
           _messages[index]["message_text"] += token;
