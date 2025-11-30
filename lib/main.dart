@@ -2,7 +2,9 @@ import 'package:chat_ai_offline/chat_list.dart';
 import 'package:chat_ai_offline/database_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:path/path.dart' as path;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 Future<String> getInitialRoute() async {
   final prefs = await SharedPreferences.getInstance();
@@ -59,19 +61,27 @@ class _HomePageWidgetState extends State<HomePageWidget> {
   }
 
   Future<void> pickFile() async {
+    await Permission.manageExternalStorage.request();
+
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['gguf'],
     );
     if (result != null) {
       final filePath = result.files.single.path!;
+      final fileName = path.basename(filePath);
+      final basePath = '/storage/emulated/0/Download/';
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('modelPath', filePath);
+      await prefs.setString('modelPath', basePath + fileName);
+
       if (mounted) {
-        Navigator.of(context).push(MaterialPageRoute(
+        Navigator.of(context).push(
+          MaterialPageRoute(
             builder: (context) => ChatListWidget(
-                  dbHelper: DatabaseHelper(),
-                )));
+              dbHelper: DatabaseHelper(),
+            ),
+          ),
+        );
       }
     }
   }

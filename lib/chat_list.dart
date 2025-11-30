@@ -6,6 +6,8 @@ import 'package:llama_flutter_android/llama_flutter_android.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import "package:timeago/timeago.dart" as timeago;
+import 'package:path/path.dart' as path;
+import 'package:permission_handler/permission_handler.dart';
 
 class ChatListWidget extends StatefulWidget {
   const ChatListWidget({super.key, required this.dbHelper});
@@ -152,16 +154,22 @@ LEFT JOIN latest c
                           ),
                           ElevatedButton(
                             onPressed: () async {
+                              await Permission.manageExternalStorage.request();
                               FilePickerResult? result =
                                   await FilePicker.platform.pickFiles(
                                 type: FileType.custom,
                                 allowedExtensions: ['gguf'],
                               );
+
                               if (result != null) {
                                 final filePath = result.files.single.path!;
+                                final fileName = path.basename(filePath);
+                                final basePath =
+                                    '/storage/emulated/0/Download/';
                                 final prefs =
                                     await SharedPreferences.getInstance();
-                                await prefs.setString('modelPath', filePath);
+                                await prefs.setString(
+                                    'modelPath', basePath + fileName);
                                 if (alertDialogContext.mounted) {
                                   Navigator.pop(alertDialogContext, true);
                                 }
